@@ -80,6 +80,7 @@ const groqProxy = (apiKey: string) => ({
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
+    base: "/Vimagine-Game/",
     plugins: [react(), groqProxy(env.GROQ_API_KEY || "")]
   };
 });

@@ -220,7 +220,8 @@ export default function App() {
   };
 
   const callGroq = async (prompt: string) => {
-    const response = await fetch("/api/groq", {
+    const apiBase = import.meta.env.VITE_API_BASE || "/api/groq";
+    const response = await fetch(apiBase, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

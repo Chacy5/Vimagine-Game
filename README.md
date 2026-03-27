@@ -24,6 +24,11 @@ Kawaii task planner game prototype with story cards and character profile.
 In production, set OPENAI_API_KEY in Vercel and set VITE_IMAGE_API_BASE in GitHub
 Actions variables to https://your-vercel-app.vercel.app/api/openai-image
 
+## OpenAI Text
+
+Text generation now uses OpenAI. In production, set VITE_TEXT_API_BASE in GitHub
+Actions variables to https://your-vercel-app.vercel.app/api/openai-chat
+
 ## Deployment
 
 ### GitHub Pages (UI)

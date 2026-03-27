@@ -230,20 +230,20 @@ export default function App() {
     setTaskItems((prev) => prev.filter((task) => task.id !== id));
   };
 
-  const callGroq = async (prompt: string) => {
-    const apiBase = import.meta.env.VITE_API_BASE || "/api/groq";
+  const callTextApi = async (prompt: string) => {
+    const apiBase = import.meta.env.VITE_TEXT_API_BASE || "/api/openai-chat";
     const response = await fetch(apiBase, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: "gpt-4o-mini",
         prompt
       })
     });
 
     const data = (await response.json()) as { content?: string; error?: string };
     if (!response.ok) {
-      throw new Error(data.error || "Groq API не отвечает.");
+      throw new Error(data.error || "OpenAI API не отвечает.");
     }
     return data.content ?? "";
   };
@@ -265,7 +265,6 @@ export default function App() {
     }
     return data.imageData ?? "";
   };
-
   const generateCharacterVariants = () => {
     const baseNames =
       profileForm.gender === "Парень"
@@ -342,7 +341,7 @@ export default function App() {
       `Ответ верни строго JSON-массивом объектов {"name":"...","tagline":"...","summary":"...","level":"..."}.`;
 
     try {
-      const raw = await callGroq(prompt);
+      const raw = await callTextApi(prompt);
       const variants = parseProfileVariants(raw);
       if (variants.length === 0) {
         throw new Error("Модель вернула неполный ответ. Попробуй снова.");
@@ -438,7 +437,7 @@ export default function App() {
       `Ответ верни строго JSON-массивом объектов вида {"title":"...","text":"..."}.`;
 
     try {
-      const raw = await callGroq(prompt);
+      const raw = await callTextApi(prompt);
       setStoryCards(parseStoryCards(raw));
     } catch (error) {
       const message =

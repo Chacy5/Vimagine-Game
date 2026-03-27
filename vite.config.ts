@@ -59,7 +59,10 @@ const groqProxy = (apiKey: string) => ({
         );
 
         const data = await response.json();
-        const content = data?.choices?.[0]?.message?.content ?? "";
+        const body = data as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        const content = body?.choices?.[0]?.message?.content ?? "";
 
         res.statusCode = response.status;
         res.setHeader("Content-Type", "application/json");

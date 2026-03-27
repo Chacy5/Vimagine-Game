@@ -46,8 +46,7 @@ export default async function handler(req, res) {
         prompt,
         size: "1024x1024",
         quality: "standard",
-        n: 1,
-        response_format: "b64_json"
+        n: 1
       })
     });
 
@@ -60,12 +59,18 @@ export default async function handler(req, res) {
     }
 
     const b64 = data?.data?.[0]?.b64_json;
-    if (!b64) {
+    const url = data?.data?.[0]?.url;
+    if (!b64 && !url) {
       res.status(500).json({ error: "Пустой ответ от OpenAI" });
       return;
     }
 
-    res.status(200).json({ imageData: `data:image/png;base64,${b64}` });
+    if (b64) {
+      res.status(200).json({ imageData: `data:image/png;base64,${b64}` });
+      return;
+    }
+
+    res.status(200).json({ imageData: url });
   } catch (error) {
     res.status(500).json({
       error: error?.message || "Ошибка при вызове OpenAI Images"

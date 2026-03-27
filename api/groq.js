@@ -19,7 +19,16 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { prompt, model } = req.body || {};
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch {
+      body = {};
+    }
+  }
+
+  const { prompt, model } = body || {};
 
   try {
     const response = await fetch(
@@ -47,7 +56,14 @@ export default async function handler(req, res) {
     const data = await response.json();
     const content = data?.choices?.[0]?.message?.content ?? "";
 
-    res.status(response.status).json({ content });
+    if (!response.ok) {
+      const errorMessage =
+        data?.error?.message || data?.error || "Groq request failed";
+      res.status(response.status).json({ error: errorMessage });
+      return;
+    }
+
+    res.status(200).json({ content });
   } catch (error) {
     res.status(500).json({
       error: error?.message || "Ошибка при вызове Groq API"

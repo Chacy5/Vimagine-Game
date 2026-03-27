@@ -16,6 +16,14 @@ Kawaii task planner game prototype with story cards and character profile.
 2) Add: GROQ_API_KEY=YOUR_KEY
 3) Restart the dev server
 
+## OpenAI Images
+
+1) Add OPENAI_API_KEY to your .env
+2) Restart the dev server
+
+In production, set OPENAI_API_KEY in Vercel and set VITE_IMAGE_API_BASE in GitHub
+Actions variables to https://your-vercel-app.vercel.app/api/openai-image
+
 ## Deployment
 
 ### GitHub Pages (UI)

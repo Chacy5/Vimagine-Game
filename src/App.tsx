@@ -149,6 +149,11 @@ export default function App() {
   });
   const [profileIsGenerating, setProfileIsGenerating] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [portraitUrl, setPortraitUrl] = useState<string | null>(() => {
+    return localStorage.getItem("vimagine_profile_portrait");
+  });
+  const [portraitIsGenerating, setPortraitIsGenerating] = useState(false);
+  const [portraitError, setPortraitError] = useState<string | null>(null);
   const [taskItems, setTaskItems] = useState<TaskItem[]>(() => {
     const saved = localStorage.getItem("vimagine_tasks");
     if (!saved) return initialTasks;
@@ -193,6 +198,12 @@ export default function App() {
     }
   }, [selectedVariantId]);
 
+  useEffect(() => {
+    if (portraitUrl) {
+      localStorage.setItem("vimagine_profile_portrait", portraitUrl);
+    }
+  }, [portraitUrl]);
+
   const addTask = () => {
     const trimmedTitle = taskTitle.trim();
     if (!trimmedTitle) return;
@@ -235,6 +246,24 @@ export default function App() {
       throw new Error(data.error || "Groq API не отвечает.");
     }
     return data.content ?? "";
+  };
+
+  const callOpenAIImage = async (prompt: string) => {
+    const apiBase =
+      import.meta.env.VITE_IMAGE_API_BASE || "/api/openai-image";
+    const response = await fetch(apiBase, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+    const data = (await response.json()) as {
+      imageData?: string;
+      error?: string;
+    };
+    if (!response.ok) {
+      throw new Error(data.error || "Image API не отвечает.");
+    }
+    return data.imageData ?? "";
   };
 
   const generateCharacterVariants = () => {
@@ -328,6 +357,36 @@ export default function App() {
       setProfileError(message);
     } finally {
       setProfileIsGenerating(false);
+    }
+  };
+
+  const generatePortrait = async () => {
+    setPortraitIsGenerating(true);
+    setPortraitError(null);
+    const base = activeHero.name || "герой";
+    const details = [
+      profileForm.gender,
+      profileForm.hair || "пастельные волосы",
+      profileForm.eyes || "мягкий взгляд"
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const prompt = `Pixel art portrait, kawaii Japanese style, soft pastel palette,` +
+      ` cute anime traveler, ${base}, ${details}.` +
+      ` Clean background, friendly, cozy vibe, 1:1 avatar.`;
+
+    try {
+      const imageData = await callOpenAIImage(prompt);
+      setPortraitUrl(imageData);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Не удалось сгенерировать изображение.";
+      setPortraitError(message);
+    } finally {
+      setPortraitIsGenerating(false);
     }
   };
 
@@ -452,7 +511,11 @@ export default function App() {
           <header className="hero hud">
             <div className="hero-badge">Vimagine</div>
             <div className="hud-card">
-              <div className="hud-avatar" aria-hidden />
+              <div
+                className="hud-avatar"
+                style={portraitUrl ? { backgroundImage: `url(${portraitUrl})` } : undefined}
+                aria-hidden
+              />
               <div className="hud-info">
                 <div className="hud-title">
                   <span className="hud-name">{activeHero.name}</span>
@@ -657,7 +720,10 @@ export default function App() {
                   </div>
                   <div className="profile-preview">
                     <div className="preview-card">
-                      <div className="avatar" />
+                      <div
+                        className="avatar"
+                        style={portraitUrl ? { backgroundImage: `url(${portraitUrl})` } : undefined}
+                      />
                       <div>
                         <h3>{activeHero.name}</h3>
                         <p>{activeHero.summary}</p>
@@ -669,6 +735,21 @@ export default function App() {
                       </div>
                     </div>
                     <div className="variant-grid">
+                      <div className="portrait-panel">
+                        <div className="portrait-preview">
+                          {portraitUrl ? (
+                            <img src={portraitUrl} alt="Портрет героя" />
+                          ) : (
+                            <span>Портрет пока не создан</span>
+                          )}
+                        </div>
+                        <button className="btn primary" onClick={generatePortrait}>
+                          {portraitIsGenerating ? "Рисуем..." : "Сгенерировать портрет"}
+                        </button>
+                        {portraitError && (
+                          <p className="profile-status error">{portraitError}</p>
+                        )}
+                      </div>
                       {profileVariants.length === 0 && (
                         <div className="variant-empty">
                           Нажми «Сгенерировать персонажа», чтобы получить

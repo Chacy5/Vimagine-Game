@@ -40,7 +40,7 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: model || "llama-3.1-70b-versatile",
+          model: model || "llama-3.1-8b-instant",
           messages: [
             {
               role: "system",

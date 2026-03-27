@@ -225,7 +225,7 @@ export default function App() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama-3.1-70b-versatile",
+        model: "llama-3.1-8b-instant",
         prompt
       })
     });

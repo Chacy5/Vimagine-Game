@@ -137,11 +137,15 @@ const openaiImageProxy = (apiKey: string) => ({
           })
         });
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          data?: Array<{ b64_json?: string }>;
+          error?: { message?: string } | string;
+        };
         const b64 = data?.data?.[0]?.b64_json;
         if (!response.ok || !b64) {
           const errorMessage =
-            data?.error?.message || data?.error || "OpenAI image request failed";
+            (typeof data?.error === "string" ? data?.error : data?.error?.message) ||
+            "OpenAI image request failed";
           res.statusCode = response.status || 500;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ error: errorMessage }));
@@ -220,11 +224,15 @@ const openaiChatProxy = (apiKey: string) => ({
           })
         });
 
-        const data = await response.json();
+        const data = (await response.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+          error?: { message?: string } | string;
+        };
         const content = data?.choices?.[0]?.message?.content ?? "";
         if (!response.ok) {
           const errorMessage =
-            data?.error?.message || data?.error || "OpenAI chat request failed";
+            (typeof data?.error === "string" ? data?.error : data?.error?.message) ||
+            "OpenAI chat request failed";
           res.statusCode = response.status || 500;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ error: errorMessage }));
